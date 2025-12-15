@@ -252,30 +252,25 @@
             const table = document.getElementById(tableId);
             const tbody = table.querySelector('tbody');
             const rowCount = tbody.rows.length + 1;
+            const numCols = tableConfigs[tableId];
             
             const row = tbody.insertRow();
-            row.innerHTML = `
-                <td class="text-center">${rowCount}</td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
-                <td><input type="text" placeholder="Digite aqui..."></td>
+            let html = `<td class="text-center">${rowCount}</td>`;
+            for (let i = 0; i < numCols; i++) {
+                html += `<td><input type="text" placeholder="Digite aqui..."></td>`;
+            }
+            html += `
                 <td class="text-center">
                     <button class="btn btn-danger btn-sm btn-delete-row" onclick="deleteRow(this)">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
             `;
-            updateRowNumbers(tableId);
-        }
+                </td>
+            `;
+             row.innerHTML = html;
+        };
 
-        // Excluir linha
         function deleteRow(btn) {
             const row = btn.closest('tr');
             const table = row.closest('table');
