@@ -38,13 +38,45 @@ body {
   width: 225px; 
   flex-shrink: 0; 
 }
-#layoutSidenav_content { flex-grow: 1; }
-.editable-table { width: 100%; margin-bottom: 1rem; }
-.editable-table th { background-color: #f8f9fa; font-weight: 600; padding: 12px; border: 1px solid #dee2e6; }
-.editable-table td { padding: 8px; border: 1px solid #dee2e6; }
-.editable-table input { width: 100%; border: none; padding: 4px; background: transparent; }
-.editable-table input:focus { outline: 2px solid #0d6efd; background: #fff; }
-.btn-delete-row { padding: 4px 8px; font-size: 0.875rem; }
-.tab-content { padding: 20px; background: #fff; border: 1px solid #dee2e6; border-top: none; }
-.nav-tabs .nav-link.active { background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; }
+#layoutSidenav_content { 
+  flex-grow: 1; 
+}
+.editable-table { 
+  width: 100%; 
+  margin-bottom: 1rem; 
+}
+.editable-table th { 
+  background-color: #f8f9fa; 
+  font-weight: 600; 
+  padding: 12px; 
+  border: 1px solid #dee2e6; 
+}
+.editable-table td { 
+  padding: 8px; 
+  border: 1px solid #dee2e6; 
+}
+.editable-table input { 
+  width: 100%; 
+  border: none; 
+  padding: 4px; 
+  background: transparent; 
+}
+.editable-table input:focus { 
+  outline: 2px solid #0d6efd; 
+  background: #fff; 
+}
+.btn-delete-row { 
+  padding: 4px 8px; 
+  font-size: 0.875rem; 
+}
+.tab-content { 
+  padding: 20px; 
+  background: #fff; 
+  border: 1px solid #dee2e6; 
+  border-top: none; 
+}
+.nav-tabs .nav-link.active { 
+  background-color: #fff; 
+  border-color: #dee2e6 #dee2e6 #fff; 
+}
 
