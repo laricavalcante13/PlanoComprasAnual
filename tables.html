@@ -248,62 +248,79 @@
             </footer>
         </div>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Inicializar tabelas com 8 linhas
-        document.addEventListener('DOMContentLoaded', function() {
-            ['table1', 'table2', 'table3', 'table4'].forEach(tableId => {
-                for (let i = 0; i < 8; i++) {
-                    addRow(tableId);
-                }
-            });
-        });
+    // Configuração de colunas por tabela
+    const tableConfigs = {
+        table1: 9,  // colunas editáveis (sem # e ações)
+        table2: 3,
+        table3: 14,
+        table4: 16
+    };
 
-        // Adicionar nova linha
-        function addRow(tableId) {
-            const table = document.getElementById(tableId);
-            const tbody = table.querySelector('tbody');
-            const rowCount = tbody.rows.length + 1;
-            const numCols = tableConfigs[tableId];
-            
-            const row = tbody.insertRow();
-            let html = `<td class="text-center">${rowCount}</td>`;
-            for (let i = 0; i < numCols; i++) {
-                html += `<td><input type="text" placeholder="Digite aqui..."></td>`;
+    // Inicializar tabelas com 8 linhas
+    document.addEventListener('DOMContentLoaded', function () {
+        Object.keys(tableConfigs).forEach(tableId => {
+            for (let i = 0; i < 8; i++) {
+                addRow(tableId);
             }
-            html += `
-                <td class="text-center">
-                    <button class="btn btn-danger btn-sm btn-delete-row" onclick="deleteRow(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-                </td>
-            `;
-             row.innerHTML = html;
-        };
-
-        function deleteRow(btn) {
-            const row = btn.closest('tr');
-            const table = row.closest('table');
-            row.remove();
-            updateRowNumbers(table.id);
-        }
-
-        // Atualizar numeração das linhas
-        function updateRowNumbers(tableId) {
-            const table = document.getElementById(tableId);
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach((row, index) => {
-                row.cells[0].textContent = index + 1;
-            });
-        }
-
-        // Toggle sidebar
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.body.classList.toggle('sb-sidenav-toggled');
         });
-    </script>
+    });
+
+    // Adicionar nova linha
+    function addRow(tableId) {
+        const table = document.getElementById(tableId);
+        const tbody = table.querySelector('tbody');
+        const numCols = tableConfigs[tableId];
+
+        const row = document.createElement('tr');
+
+        // Coluna de numeração
+        row.innerHTML = `<td class="text-center"></td>`;
+
+        // Colunas editáveis
+        for (let i = 0; i < numCols; i++) {
+            row.innerHTML += `
+                <td>
+                    <input type="text" placeholder="Digite aqui...">
+                </td>
+            `;
+        }
+
+        // Coluna de ações
+        row.innerHTML += `
+            <td class="text-center">
+                <button class="btn btn-danger btn-sm btn-delete-row" onclick="deleteRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+        updateRowNumbers(tableId);
+    }
+
+    // Excluir linha
+    function deleteRow(btn) {
+        const row = btn.closest('tr');
+        const table = row.closest('table');
+        row.remove();
+        updateRowNumbers(table.id);
+    }
+
+    // Atualizar numeração das linhas
+    function updateRowNumbers(tableId) {
+        const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+        });
+    }
+
+    // Toggle sidebar
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+        document.body.classList.toggle('sb-sidenav-toggled');
+    });
+</script>
 </body>
 </html>
