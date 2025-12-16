@@ -4,6 +4,8 @@ const tableConfigs = {
     table2: 0,
     table3: 14,
     table4: 16
+};
+
 // Contador de linhas por tabela
 let rowCounters = {
     table1: 0,
@@ -102,14 +104,65 @@ function removeBudgetColumn(category) {
     });
 }
 
-};
-
 // Funções globais
 window.addRow = function(tableId) {
     const table = document.getElementById(tableId);
     const tbody = table.querySelector('tbody');
+    
+    // Para table2 (orçamento), usar lógica especial
+    if (tableId === 'table2') {
+        const row = document.createElement('tr');
+        
+        // Coluna numeração
+        const tdNum = document.createElement('td');
+        tdNum.classList.add('text-center');
+        row.appendChild(tdNum);
+        
+        // Ação/Operação
+        const tdAction = document.createElement('td');
+        const inputAction = document.createElement('input');
+        inputAction.type = 'text';
+        inputAction.placeholder = 'Ação/Operação';
+        tdAction.appendChild(inputAction);
+        row.appendChild(tdAction);
+        
+        // Custo Total
+        const tdTotal = document.createElement('td');
+        const inputTotal = document.createElement('input');
+        inputTotal.type = 'number';
+        inputTotal.step = '0.01';
+        inputTotal.placeholder = 'R$ 0,00';
+        tdTotal.appendChild(inputTotal);
+        row.appendChild(tdTotal);
+        
+        // Adicionar células para cada coluna de orçamento existente
+        budgetColumns.forEach(() => {
+            const td = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.01';
+            input.placeholder = 'R$ 0,00';
+            td.appendChild(input);
+            row.appendChild(td);
+        });
+        
+        // Coluna ações
+        const tdBtn = document.createElement('td');
+        tdBtn.classList.add('text-center');
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-danger btn-sm btn-delete-row';
+        btn.innerHTML = '<i class="fas fa-trash"></i>';
+        btn.addEventListener('click', () => deleteRow(btn));
+        tdBtn.appendChild(btn);
+        row.appendChild(tdBtn);
+        
+        tbody.appendChild(row);
+        updateRowNumbers(tableId);
+        return;
+    }
+    
+    // Para outras tabelas
     const numCols = tableConfigs[tableId];
-
     const row = document.createElement('tr');
 
     // Coluna numeração
@@ -158,7 +211,10 @@ function updateRowNumbers(tableId) {
 // Inicializar tabelas + sidebar após DOM carregado
 document.addEventListener('DOMContentLoaded', function() {
     Object.keys(tableConfigs).forEach(tableId => {
-        for (let i = 0; i < 8; i++) addRow(tableId);
+        // Não inicializar table2 com linhas (tabela de orçamento)
+        if (tableId !== 'table2') {
+            for (let i = 0; i < 8; i++) addRow(tableId);
+        }
     });
 
     // Toggle sidebar
