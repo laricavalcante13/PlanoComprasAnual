@@ -1,9 +1,107 @@
 // Configuração de colunas por tabela
 const tableConfigs = {
     table1: 9,
-    table2: 3,
+    table2: 0,
     table3: 14,
     table4: 16
+// Contador de linhas por tabela
+let rowCounters = {
+    table1: 0,
+    table2: 0,
+    table3: 0,
+    table4: 0
+};
+
+// Categorias de orçamento disponíveis
+const budgetCategories = [
+    "Passagem Aérea",
+    "Passagem Rodoviária",
+    "Diárias e Deslocamento",
+    "Auxílio Representação",
+    "Material Consumo",
+    "Locação de Equipamentos",
+    "Locação Anfiteatros/Salas",
+    "Serviço Postal",
+    "Assessorias",
+    "Impressões",
+    "Outros"
+];
+
+// Colunas adicionadas na tabela de orçamento
+let budgetColumns = [];
+
+// Adicionar coluna de orçamento
+function addBudgetColumn() {
+    const select = document.getElementById('budgetCategorySelect');
+    const category = select.value;
+    
+    if (!category) {
+        alert('Selecione uma categoria');
+        return;
+    }
+    
+    if (budgetColumns.includes(category)) {
+        alert('Esta categoria já foi adicionada');
+        return;
+    }
+    
+    budgetColumns.push(category);
+    
+    const table = document.getElementById('table2');
+    const thead = table.querySelector('thead tr');
+    const actionsHeader = thead.querySelector('th:last-child');
+    
+    // Adicionar header da nova coluna
+    const newHeader = document.createElement('th');
+    newHeader.style.width = '15%';
+    newHeader.innerHTML = `${category} <button class="btn btn-danger btn-sm ms-2" onclick="removeBudgetColumn('${category}')"><i class="fas fa-times"></i></button>`;
+    thead.insertBefore(newHeader, actionsHeader);
+    
+    // Adicionar células nas linhas existentes
+    const tbody = table.querySelector('tbody');
+    tbody.querySelectorAll('tr').forEach(row => {
+        const actionsCell = row.querySelector('td:last-child');
+        const newCell = document.createElement('td');
+        newCell.innerHTML = '<input type="number" step="0.01" placeholder="R$ 0,00">';
+        row.insertBefore(newCell, actionsCell);
+    });
+    
+    select.value = '';
+}
+
+// Remover coluna de orçamento
+function removeBudgetColumn(category) {
+    if (!confirm(`Remover a coluna "${category}"?`)) return;
+    
+    const index = budgetColumns.indexOf(category);
+    if (index === -1) return;
+    
+    budgetColumns.splice(index, 1);
+    
+    const table = document.getElementById('table2');
+    const thead = table.querySelector('thead tr');
+    const headers = thead.querySelectorAll('th');
+    
+    // Encontrar índice da coluna (pulando #, Ação/Operação, Total)
+    let columnIndex = -1;
+    headers.forEach((th, i) => {
+        if (th.textContent.includes(category)) {
+            columnIndex = i;
+        }
+    });
+    
+    if (columnIndex === -1) return;
+    
+    // Remover header
+    headers[columnIndex].remove();
+    
+    // Remover células de todas as linhas
+    const tbody = table.querySelector('tbody');
+    tbody.querySelectorAll('tr').forEach(row => {
+        row.querySelectorAll('td')[columnIndex].remove();
+    });
+}
+
 };
 
 // Funções globais
