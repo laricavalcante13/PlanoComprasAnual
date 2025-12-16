@@ -4,7 +4,7 @@
 
 const tableConfigs = {
     table1: 9,
-    table2: 2, // Será tratada separadamente
+    table2: 2, 
     table3: 14,
     table4: 16
 };
@@ -156,15 +156,6 @@ function addRowTable2() {
     });
 
     // Coluna Ações
-    const tdAction1 = document.createElement('td');
-    tdAction1.classList.add('text-center');
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-danger btn-sm btn-delete-row';
-    btn.innerHTML = '<i class="fas fa-trash"></i>';
-    btn.addEventListener('click', () => deleteRow(btn));
-    tdAction1.appendChild(btn);
-    row.appendChild(tdAction1);
-    /*
     const tdBtn = document.createElement('td');
     tdBtn.classList.add('text-center');
     const btn = document.createElement('button');
@@ -173,8 +164,7 @@ function addRowTable2() {
     btn.addEventListener('click', () => deleteRow(btn));
     tdBtn.appendChild(btn);
     row.appendChild(tdBtn);
-    */
-
+    
     tbody.appendChild(row);
     updateRowNumbers('table2');
 }
@@ -225,6 +215,7 @@ window.addRow = function(tableId) {
 };
 
 window.deleteRow = function(btn) {
+    if (!confirm(`Deseja remover a linha selecionada?`)) return;
     const row = btn.closest('tr');
     const table = row.closest('table');
     row.remove();
