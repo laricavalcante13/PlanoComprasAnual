@@ -155,7 +155,9 @@ function addRowTable2() {
         row.appendChild(td);
     });
 
-    // Coluna Ações (SEMPRE POR ÚLTIMO)
+    // Coluna Ações
+
+    /*
     const tdBtn = document.createElement('td');
     tdBtn.classList.add('text-center');
     const btn = document.createElement('button');
@@ -164,6 +166,7 @@ function addRowTable2() {
     btn.addEventListener('click', () => deleteRow(btn));
     tdBtn.appendChild(btn);
     row.appendChild(tdBtn);
+    */
 
     tbody.appendChild(row);
     updateRowNumbers('table2');
