@@ -56,27 +56,21 @@ function addBudgetColumn() {
     const theadRow = table.querySelector('thead tr');
     const tbody = table.querySelector('tbody');
     
-    // Pegar todos os headers
-    const allHeaders = Array.from(theadRow.querySelectorAll('th'));
-    const actionsHeader = allHeaders[allHeaders.length-1]; // Último header (Ações)
-
     // Adicionar novo header ANTES do header de Ações
+    const actionsHeader = theadRow.querySelector('th:last-child');
     const newHeader = document.createElement('th');
     newHeader.style.width = '10%';
     newHeader.innerHTML = `${category} <button class="btn btn-danger btn-sm ms-2" onclick="removeBudgetColumn('${category}')"><i class="fas fa-times"></i></button>`;
     theadRow.insertBefore(newHeader, actionsHeader);
 
-    // Adicionar célula em cada linha ANTES da célula de Ações (identificada pela classe)
+    // Adicionar célula em cada linha ANTES da célula de Ações
     tbody.querySelectorAll('tr').forEach(row => {
-        const actionsCell = row.querySelector('td.actions-cell');
-        if (!actionsCell) return; // Segurança caso não encontre
-
+        const actionsCell = row.querySelector('td:last-child');
         const td = document.createElement('td');
         const input = document.createElement('input');
         input.type = 'text';
         input.placeholder = '...';
         td.appendChild(input);
-        
         row.insertBefore(td, actionsCell);
     });
 
@@ -86,31 +80,27 @@ function addBudgetColumn() {
 function removeBudgetColumn(category) {
     if (!confirm(`Remover a coluna "${category}"?`)) return;
 
-    const index = budgetColumns.indexOf(category);
-    if (index === -1) return;
-
-    budgetColumns.splice(index, 1);
+    budgetColumns = budgetColumns.filter(cat => cat !== category);
 
     const table = document.getElementById('table2');
     const theadRow = table.querySelector('thead tr');
     const headers = Array.from(theadRow.querySelectorAll('th'));
+    
+    // Encontrar e remover header da categoria
+    const headerToRemove = headers.find(th => th.textContent.includes(category));
+    if (headerToRemove) {
+        headerToRemove.remove();
+    }
 
-    let columnIndex = -1;
-    headers.forEach((th, i) => {
-        if (th.textContent.includes(category)) {
-            columnIndex = i;
-        }
-    });
-
-    if (columnIndex === -1) return;
-
-    headers[columnIndex].remove();
-
+    // Remover células correspondentes em todas as linhas
     const tbody = table.querySelector('tbody');
     tbody.querySelectorAll('tr').forEach(row => {
         const cells = Array.from(row.querySelectorAll('td'));
-        if (cells[columnIndex]) {
-            cells[columnIndex].remove();
+        const cellToRemove = cells.find(td => td.querySelector('input') && 
+            td.previousElementSibling?.querySelector('input')?.placeholder === '...' &&
+            !td.classList.contains('text-center'));
+        if (cellToRemove) {
+            cellToRemove.remove();
         }
     });
     
@@ -147,7 +137,7 @@ function addRowTable2() {
     tdTotal.appendChild(inputTotal);
     row.appendChild(tdTotal);
 
-    // Colunas dinâmicas de orçamento
+    // Colunas dinâmicas de orçamento (sempre ANTES da coluna Ações)
     budgetColumns.forEach(() => {
         const td = document.createElement('td');
         const input = document.createElement('input');
@@ -157,26 +147,25 @@ function addRowTable2() {
         row.appendChild(td);
     });
 
-    // Coluna Ações (SEMPRE ÚLTIMA com classe específica)
-    const tdBtn = document.createElement('td');
-    tdBtn.classList.add('text-center', 'actions-cell');
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-danger btn-sm btn-delete-row';
-    btn.innerHTML = '<i class="fas fa-trash"></i>';
-    btn.addEventListener('click', () => deleteRow(btn));
-    tdBtn.appendChild(btn);
-    row.appendChild(tdBtn);
+    // Coluna Ações (SEMPRE ÚLTIMA)
+    const tdActions = document.createElement('td');
+    tdActions.classList.add('text-center');
+    const btnDelete = document.createElement('button');
+    btnDelete.className = 'btn btn-danger btn-sm btn-delete-row';
+    btnDelete.innerHTML = '<i class="fas fa-trash"></i>';
+    btnDelete.onclick = function() { deleteRow(this); };
+    tdActions.appendChild(btnDelete);
+    row.appendChild(tdActions);
     
     tbody.appendChild(row);
     updateRowNumbers('table2');
 }
 
 /**************************************
- * CRUD DE LINHAS - OUTRAS TABELAS (CORRIGIDA)
+ * CRUD DE LINHAS - OUTRAS TABELAS
  **************************************/
 
 window.addRow = function(tableId) {
-    // Se for table2, usar função específica
     if (tableId === 'table2') {
         addRowTable2();
         return;
@@ -202,32 +191,34 @@ window.addRow = function(tableId) {
         row.appendChild(td);
     }
 
-    // Coluna Ações (com classe específica)
-    const tdAction = document.createElement('td');
-    tdAction.classList.add('text-center', 'actions-cell');
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-danger btn-sm btn-delete-row';
-    btn.innerHTML = '<i class="fas fa-trash"></i>';
-    btn.addEventListener('click', () => deleteRow(btn));
-    tdAction.appendChild(btn);
-    row.appendChild(tdAction);
+    // Coluna Ações (SEMPRE ÚLTIMA)
+    const tdActions = document.createElement('td');
+    tdActions.classList.add('text-center');
+    const btnDelete = document.createElement('button');
+    btnDelete.className = 'btn btn-danger btn-sm btn-delete-row';
+    btnDelete.innerHTML = '<i class="fas fa-trash"></i>';
+    btnDelete.onclick = function() { deleteRow(this); };
+    tdActions.appendChild(btnDelete);
+    row.appendChild(tdActions);
 
     tbody.appendChild(row);
     updateRowNumbers(tableId);
 };
 
 window.deleteRow = function(btn) {
-    if (!confirm(`Deseja remover a linha selecionada?`)) return;
+    if (!confirm('Deseja remover a linha selecionada?')) return;
     const row = btn.closest('tr');
-    const table = row.closest('table');
+    const tableId = row.closest('table').id;
     row.remove();
-    updateRowNumbers(table.id);
+    updateRowNumbers(tableId);
 };
 
 function updateRowNumbers(tableId) {
     const rows = document.querySelectorAll(`#${tableId} tbody tr`);
     rows.forEach((row, index) => {
-        row.cells[0].textContent = index + 1;
+        if (row.cells[0]) {
+            row.cells[0].textContent = index + 1;
+        }
     });
 }
 
@@ -236,7 +227,6 @@ function updateRowNumbers(tableId) {
  **************************************/
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar TODAS as tabelas com 8 linhas
     Object.keys(tableConfigs).forEach(tableId => {
         for (let i = 0; i < 8; i++) {
             addRow(tableId);
