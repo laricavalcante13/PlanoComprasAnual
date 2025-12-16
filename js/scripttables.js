@@ -1,4 +1,3 @@
-
 /**************************************
  * CONFIGURAÇÕES GERAIS
  **************************************/
@@ -59,7 +58,7 @@ function addBudgetColumn() {
 
     const table = document.getElementById('table2');
     const theadRow = table.querySelector('thead tr');
-    const thCells = theadRow.querySelectorAll('th');
+    const thCells = Array.from(theadRow.querySelectorAll('th'));
     const actionsHeader = thCells[thCells.length - 1];
 
     // Header
@@ -77,16 +76,13 @@ function addBudgetColumn() {
     // Linhas existentes
     const tbody = table.querySelector('tbody');
     tbody.querySelectorAll('tr').forEach(row => {
-        const cells = row.querySelectorAll('td');
+        const cells = Array.from(row.querySelectorAll('td'));
         const actionsCell = cells[cells.length - 1];
 
         const td = document.createElement('td');
         const input = document.createElement('input');
-        input.type = 'number';
-        input.step = '0.01';
-        input.placeholder = 'R$ 0,00';
-        input.classList.add('budget-value');
-        input.addEventListener('input', () => calcularTotalLinha(row));
+        input.type = 'text';
+        input.placeholder = '...';
 
         td.appendChild(input);
         row.insertBefore(td, actionsCell);
@@ -105,7 +101,7 @@ function removeBudgetColumn(category) {
 
     const table = document.getElementById('table2');
     const theadRow = table.querySelector('thead tr');
-    const headers = theadRow.querySelectorAll('th');
+    const headers = Array.from(theadRow.querySelectorAll('th'));
 
     let columnIndex = -1;
     headers.forEach((th, i) => {
@@ -120,27 +116,11 @@ function removeBudgetColumn(category) {
 
     const tbody = table.querySelector('tbody');
     tbody.querySelectorAll('tr').forEach(row => {
-        row.querySelectorAll('td')[columnIndex].remove();
-        calcularTotalLinha(row);
+        const cells = Array.from(row.querySelectorAll('td'));
+        if (cells[columnIndex]) {
+            cells[columnIndex].remove();
+        }
     });
-}
-
-/**************************************
- * SOMA AUTOMÁTICA (FLOAT)
- **************************************/
-
-function calcularTotalLinha(row) {
-    let total = 0;
-
-    row.querySelectorAll('.budget-value').forEach(input => {
-        const valor = parseFloat(input.value);
-        if (!isNaN(valor)) total += valor;
-    });
-
-    const totalInput = row.querySelector('.row-total');
-    if (totalInput) {
-        totalInput.value = total.toFixed(2);
-    }
 }
 
 /**************************************
@@ -164,34 +144,29 @@ window.addRow = function(tableId) {
         const tdActionOp = document.createElement('td');
         const inputAction = document.createElement('input');
         inputAction.type = 'text';
-        inputAction.placeholder = 'Ação/Operação';
+        inputAction.placeholder = '...';
         tdActionOp.appendChild(inputAction);
         row.appendChild(tdActionOp);
 
-        // Colunas orçamento
+        // Custo Total
+        const tdTotal = document.createElement('td');
+        const inputTotal = document.createElement('input');
+        inputTotal.type = 'text';
+        inputTotal.placeholder = '...';
+        tdTotal.appendChild(inputTotal);
+        row.appendChild(tdTotal);
+
+        // Colunas orçamento dinâmicas
         budgetColumns.forEach(() => {
             const td = document.createElement('td');
             const input = document.createElement('input');
-            input.type = 'number';
-            input.step = '0.01';
-            input.placeholder = 'R$ 0,00';
-            input.classList.add('budget-value');
-            input.addEventListener('input', () => calcularTotalLinha(row));
+            input.type = 'text';
+            input.placeholder = '...';
             td.appendChild(input);
             row.appendChild(td);
         });
 
-        // Total (calculado)
-        const tdTotal = document.createElement('td');
-        const inputTotal = document.createElement('input');
-        inputTotal.type = 'number';
-        inputTotal.step = '0.01';
-        inputTotal.readOnly = true;
-        inputTotal.classList.add('row-total');
-        tdTotal.appendChild(inputTotal);
-        row.appendChild(tdTotal);
-
-        // Ações (sempre última)
+        // Ações (SEMPRE POR ÚLTIMO)
         const tdBtn = document.createElement('td');
         tdBtn.classList.add('text-center');
         const btn = document.createElement('button');
@@ -270,3 +245,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
