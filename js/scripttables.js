@@ -51,7 +51,8 @@ function addBudgetColumn() {
     
     const table = document.getElementById('table2');
     const thead = table.querySelector('thead tr');
-    const actionsHeader = thead.querySelector('th:last-child');
+    const actionsHeader = thCells[thCells.length - 1];
+    //const actionsHeader = thead.querySelector('th:last-child');**verificar
     
     // Adicionar header da nova coluna ANTES da coluna de Ações
     const newHeader = document.createElement('th');
@@ -72,6 +73,44 @@ function addBudgetColumn() {
     select.value = '';
 }
 
+
+// Remover coluna de orçamento
+function removeBudgetColumn(category) {
+    if (!confirm(`Remover a coluna "${category}"?`)) return;
+    
+    const index = budgetColumns.indexOf(category);
+    if (index === -1) return;
+    
+    budgetColumns.splice(index, 1);
+    
+    const table = document.getElementById('table2');
+    const thead = table.querySelector('thead tr');
+    const headers = Array.from(thead.querySelectorAll('th'));
+    
+    // Encontrar índice da coluna
+    let columnIndex = -1;
+    headers.forEach((th, i) => {
+        if (th.textContent.includes(category)) {
+            columnIndex = i;
+        }
+    });
+    
+    if (columnIndex === -1) return;
+    
+    // Remover header
+    headers[columnIndex].remove();
+    
+    // Remover células de todas as linhas pelo MESMO índice
+    const tbody = table.querySelector('tbody');
+    tbody.querySelectorAll('tr').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'));
+        if (cells[columnIndex]) {
+            cells[columnIndex].remove();
+        }
+    });
+}
+
+/*
 // Remover coluna de orçamento
 function removeBudgetColumn(category) {
     if (!confirm(`Remover a coluna "${category}"?`)) return;
@@ -104,6 +143,9 @@ function removeBudgetColumn(category) {
         row.querySelectorAll('td')[columnIndex].remove();
     });
 }
+
+
+*/
 
 // Funções globais
 window.addRow = function(tableId) {
