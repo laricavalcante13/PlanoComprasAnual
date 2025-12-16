@@ -58,11 +58,11 @@ function addBudgetColumn() {
     
     // Pegar todos os headers
     const allHeaders = Array.from(theadRow.querySelectorAll('th'));
-    const actionsHeader = allHeaders[allHeaders.length - 1]; // Último header (Ações)
+    const actionsHeader = allHeaders[allHeaders.length - 2]; // Último header (Ações)
 
     // Adicionar novo header ANTES do header de Ações
     const newHeader = document.createElement('th');
-    newHeader.style.width = '15%';
+    newHeader.style.width = '10%';
     newHeader.innerHTML = `${category} <button class="btn btn-danger btn-sm ms-2" onclick="removeBudgetColumn('${category}')"><i class="fas fa-times"></i></button>`;
     theadRow.insertBefore(newHeader, actionsHeader);
 
