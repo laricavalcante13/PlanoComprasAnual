@@ -1,12 +1,17 @@
-// Configuração de colunas por tabela
+
+/**************************************
+ * CONFIGURAÇÕES GERAIS
+ **************************************/
+
+// Número de colunas editáveis por tabela (exceto Nº e Ações)
 const tableConfigs = {
     table1: 9,
-    table2: 0,
+    table2: 0, // controlada dinamicamente
     table3: 14,
     table4: 16
 };
 
-// Contador de linhas por tabela
+// Contador de linhas
 let rowCounters = {
     table1: 0,
     table2: 0,
@@ -14,7 +19,7 @@ let rowCounters = {
     table4: 0
 };
 
-// Categorias de orçamento disponíveis
+// Categorias disponíveis
 const budgetCategories = [
     "Passagem Aérea",
     "Passagem Rodoviária",
@@ -29,126 +34,164 @@ const budgetCategories = [
     "Outros"
 ];
 
-// Colunas adicionadas na tabela de orçamento
+// Categorias ativas na table2
 let budgetColumns = [];
 
-// Adicionar coluna de orçamento
+/**************************************
+ * ORÇAMENTO – COLUNAS DINÂMICAS (TABLE2)
+ **************************************/
+
 function addBudgetColumn() {
     const select = document.getElementById('budgetCategorySelect');
     const category = select.value;
-    
+
     if (!category) {
         alert('Selecione uma categoria');
         return;
     }
-    
+
     if (budgetColumns.includes(category)) {
         alert('Esta categoria já foi adicionada');
         return;
     }
-    
+
     budgetColumns.push(category);
-    
+
     const table = document.getElementById('table2');
-    const thead = table.querySelector('thead tr');
+    const theadRow = table.querySelector('thead tr');
+    const thCells = theadRow.querySelectorAll('th');
     const actionsHeader = thCells[thCells.length - 1];
-    //const actionsHeader = thead.querySelector('th:last-child');**verificar
-    
-    // Adicionar header da nova coluna ANTES da coluna de Ações
+
+    // Header
     const newHeader = document.createElement('th');
     newHeader.style.width = '15%';
-    newHeader.innerHTML = `${category} <button class="btn btn-danger btn-sm ms-2" onclick="removeBudgetColumn('${category}')"><i class="fas fa-times"></i></button>`;
-    thead.insertBefore(newHeader, actionsHeader);
-    
-    // Adicionar células nas linhas existentes ANTES da última célula (Ações)
+    newHeader.innerHTML = `
+        ${category}
+        <button class="btn btn-danger btn-sm ms-2"
+            onclick="removeBudgetColumn('${category}')">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    theadRow.insertBefore(newHeader, actionsHeader);
+
+    // Linhas existentes
     const tbody = table.querySelector('tbody');
     tbody.querySelectorAll('tr').forEach(row => {
         const cells = row.querySelectorAll('td');
-        const actionsCell = cells[cells.length - 1]; // Última célula (Ações)
-        const newCell = document.createElement('td');
-        newCell.innerHTML = '<input type="number" step="0.01" placeholder="R$ 0,00">';
-        row.insertBefore(newCell, actionsCell);
+        const actionsCell = cells[cells.length - 1];
+
+        const td = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = '0.01';
+        input.placeholder = 'R$ 0,00';
+        input.classList.add('budget-value');
+        input.addEventListener('input', () => calcularTotalLinha(row));
+
+        td.appendChild(input);
+        row.insertBefore(td, actionsCell);
     });
-    
+
     select.value = '';
 }
 
-// Remover coluna de orçamento
 function removeBudgetColumn(category) {
     if (!confirm(`Remover a coluna "${category}"?`)) return;
-    
+
     const index = budgetColumns.indexOf(category);
     if (index === -1) return;
-    
+
     budgetColumns.splice(index, 1);
-    
+
     const table = document.getElementById('table2');
-    const thead = table.querySelector('thead tr');
-    const headers = thead.querySelectorAll('th');
-    
-    // Encontrar índice da coluna (pulando #, Ação/Operação, Total)
+    const theadRow = table.querySelector('thead tr');
+    const headers = theadRow.querySelectorAll('th');
+
     let columnIndex = -1;
     headers.forEach((th, i) => {
         if (th.textContent.includes(category)) {
             columnIndex = i;
         }
     });
-    
+
     if (columnIndex === -1) return;
-    
-    // Remover header
+
     headers[columnIndex].remove();
-    
-    // Remover células de todas as linhas
+
     const tbody = table.querySelector('tbody');
     tbody.querySelectorAll('tr').forEach(row => {
         row.querySelectorAll('td')[columnIndex].remove();
+        calcularTotalLinha(row);
     });
 }
 
-// Funções globais
+/**************************************
+ * SOMA AUTOMÁTICA (FLOAT)
+ **************************************/
+
+function calcularTotalLinha(row) {
+    let total = 0;
+
+    row.querySelectorAll('.budget-value').forEach(input => {
+        const valor = parseFloat(input.value);
+        if (!isNaN(valor)) total += valor;
+    });
+
+    const totalInput = row.querySelector('.row-total');
+    if (totalInput) {
+        totalInput.value = total.toFixed(2);
+    }
+}
+
+/**************************************
+ * CRUD DE LINHAS
+ **************************************/
+
 window.addRow = function(tableId) {
     const table = document.getElementById(tableId);
     const tbody = table.querySelector('tbody');
-    
-    // Para table2 (orçamento), usar lógica especial
+
+    // TABLE2 (Orçamento)
     if (tableId === 'table2') {
         const row = document.createElement('tr');
-        
-        // Coluna numeração
+
+        // Nº
         const tdNum = document.createElement('td');
         tdNum.classList.add('text-center');
         row.appendChild(tdNum);
-        
+
         // Ação/Operação
-        const tdAction = document.createElement('td');
+        const tdActionOp = document.createElement('td');
         const inputAction = document.createElement('input');
         inputAction.type = 'text';
         inputAction.placeholder = 'Ação/Operação';
-        tdAction.appendChild(inputAction);
-        row.appendChild(tdAction);
-        
-        // Custo Total
-        const tdTotal = document.createElement('td');
-        const inputTotal = document.createElement('input');
-        inputTotal.type = 'number';
-        inputTotal.step = '0.01';
-        inputTotal.placeholder = 'R$ 0,00';
-        tdTotal.appendChild(inputTotal);
-        row.appendChild(tdTotal);
-        
-        // Adicionar células para cada coluna de orçamento existente
+        tdActionOp.appendChild(inputAction);
+        row.appendChild(tdActionOp);
+
+        // Colunas orçamento
         budgetColumns.forEach(() => {
             const td = document.createElement('td');
             const input = document.createElement('input');
             input.type = 'number';
             input.step = '0.01';
             input.placeholder = 'R$ 0,00';
+            input.classList.add('budget-value');
+            input.addEventListener('input', () => calcularTotalLinha(row));
             td.appendChild(input);
             row.appendChild(td);
         });
-        
-        // Coluna ações
+
+        // Total (calculado)
+        const tdTotal = document.createElement('td');
+        const inputTotal = document.createElement('input');
+        inputTotal.type = 'number';
+        inputTotal.step = '0.01';
+        inputTotal.readOnly = true;
+        inputTotal.classList.add('row-total');
+        tdTotal.appendChild(inputTotal);
+        row.appendChild(tdTotal);
+
+        // Ações (sempre última)
         const tdBtn = document.createElement('td');
         tdBtn.classList.add('text-center');
         const btn = document.createElement('button');
@@ -157,22 +200,20 @@ window.addRow = function(tableId) {
         btn.addEventListener('click', () => deleteRow(btn));
         tdBtn.appendChild(btn);
         row.appendChild(tdBtn);
-        
+
         tbody.appendChild(row);
         updateRowNumbers(tableId);
         return;
     }
-    
-    // Para outras tabelas
+
+    // OUTRAS TABELAS
     const numCols = tableConfigs[tableId];
     const row = document.createElement('tr');
 
-    // Coluna numeração
     const tdNum = document.createElement('td');
     tdNum.classList.add('text-center');
     row.appendChild(tdNum);
 
-    // Colunas editáveis
     for (let i = 0; i < numCols; i++) {
         const td = document.createElement('td');
         const input = document.createElement('input');
@@ -182,7 +223,6 @@ window.addRow = function(tableId) {
         row.appendChild(td);
     }
 
-    // Coluna ações
     const tdAction = document.createElement('td');
     tdAction.classList.add('text-center');
     const btn = document.createElement('button');
@@ -210,16 +250,19 @@ function updateRowNumbers(tableId) {
     });
 }
 
-// Inicializar tabelas + sidebar após DOM carregado
+/**************************************
+ * INICIALIZAÇÃO
+ **************************************/
+
 document.addEventListener('DOMContentLoaded', function() {
     Object.keys(tableConfigs).forEach(tableId => {
-        // Não inicializar table2 com linhas (tabela de orçamento)
         if (tableId !== 'table2') {
-            for (let i = 0; i < 8; i++) addRow(tableId);
+            for (let i = 0; i < 8; i++) {
+                addRow(tableId);
+            }
         }
     });
 
-    // Toggle sidebar
     const sidebarToggle = document.getElementById('sidebarToggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', () => {
