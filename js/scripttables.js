@@ -24,6 +24,7 @@ const budgetCategories = [
 ];
 
 let budgetColumns = [];
+let savedData = {}; // Armazena dados salvos por tabela
 
 /**************************************
  * BOTÃO FLUTUANTE PARA TODAS AS TABELAS
@@ -58,28 +59,117 @@ function addBudgetColumn() {
     select.value = '';
 }
 
-function removeBudgetColumn(category) {
-    if (!confirm(`Remover coluna "${category}"?`)) return;
+/**************************************
+ * FUNÇÃO SALVAR PLANILHA
+ **************************************/
 
-    budgetColumns = budgetColumns.filter(cat => cat !== category);
+window.saveTableData = function(tableId) {
+    const table = document.getElementById(tableId);
+    const rows = table.querySelectorAll('tbody tr');
+    const data = [];
 
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [];
+        
+        cells.forEach((cell, index) => {
+            if (cell.classList.contains('row-number')) {
+                rowData.push(cell.textContent); // Mantém o número
+            } else {
+                const input = cell.querySelector('input');
+                rowData.push(input ? input.value : cell.textContent);
+            }
+        });
+        
+        data.push(rowData);
+    });
+
+    // Salva no localStorage
+    savedData[tableId] = {
+        data: data,
+        budgetColumns: tableId === 'table2' ? [...budgetColumns] : []
+    };
+    
+    localStorage.setItem('planilhaData', JSON.stringify(savedData));
+    
+    // Feedback visual
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Salvo!';
+    btn.classList.remove('btn-warning');
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-warning');
+    }, 2000);
+    
+    console.log(`Planilha ${tableId} salva com ${data.length} linhas`);
+};
+
+/**************************************
+ * FUNÇÃO CARREGAR DADOS SALVOS
+ **************************************/
+
+function loadSavedData() {
+    const saved = localStorage.getItem('planilhaData');
+    if (!saved) return;
+
+    savedData = JSON.parse(saved);
+    
+    Object.keys(tableConfigs).forEach(tableId => {
+        if (savedData[tableId]) {
+            const tableData = savedData[tableId];
+            
+            if (tableId === 'table2' && tableData.budgetColumns) {
+                // Recria colunas dinâmicas da table2
+                budgetColumns = tableData.budgetColumns;
+                tableData.budgetColumns.forEach(category => addBudgetColumnRecreate(category));
+            }
+            
+            // Recria linhas
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            
+            tableData.data.forEach(rowData => {
+                const row = document.createElement('tr');
+                row.dataset.rowId = Date.now();
+                
+                rowData.forEach((cellData, index) => {
+                    const td = document.createElement('td');
+                    if (index === 0) {
+                        td.className = 'text-center row-number';
+                        td.textContent = cellData;
+                    } else {
+                        td.innerHTML = `<input type="text" value="${cellData}" placeholder="...">`;
+                    }
+                    row.appendChild(td);
+                });
+                
+                tbody.appendChild(row);
+                row.addEventListener('mouseenter', showDeleteButton);
+                row.addEventListener('mouseleave', hideDeleteButton);
+            });
+            
+            updateRowNumbers(tableId);
+        }
+    });
+}
+
+function addBudgetColumnRecreate(category) {
+    budgetColumns.push(category);
     const table = document.getElementById('table2');
     const theadRow = table.querySelector('thead tr');
-    const thToRemove = Array.from(theadRow.children).find(th => th.textContent.includes(category));
-    if (thToRemove) thToRemove.remove();
-
-    const tbody = table.querySelector('tbody');
-    tbody.querySelectorAll('tr').forEach(row => {
-        const tds = Array.from(row.children);
-        const tdToRemove = tds.find((td, i) => i < tds.length - 1 && td.textContent.includes(category));
-        if (tdToRemove) tdToRemove.remove();
-    });
-    
-    updateRowNumbers('table2');
+    const newHeader = document.createElement('th');
+    newHeader.style.width = '10%';
+    newHeader.innerHTML = `${category}`;
+    theadRow.insertBefore(newHeader, theadRow.lastElementChild);
 }
 
 /**************************************
- * CRIAÇÃO DE LINHAS SEM COLUNA AÇÕES (TODAS TABELAS)
+ * CRIAÇÃO DE LINHAS (mantida igual)
  **************************************/
 
 function addRowAnyTable(tableId) {
@@ -99,6 +189,11 @@ function addRowAnyTable(tableId) {
         const tdAction = document.createElement('td');
         tdAction.innerHTML = '<input type="text" placeholder="...">';
         row.appendChild(tdAction);
+
+        // Quantidade
+        const tdQty = document.createElement('td');
+        tdQty.innerHTML = '<input type="text" placeholder="...">';
+        row.appendChild(tdQty);
 
         // Custo Total
         const tdTotal = document.createElement('td');
@@ -123,11 +218,12 @@ function addRowAnyTable(tableId) {
     tbody.appendChild(row);
     updateRowNumbers(tableId);
 
-    // Botão flutuante em TODAS as linhas
+    // Botão flutuante
     row.addEventListener('mouseenter', showDeleteButton);
     row.addEventListener('mouseleave', hideDeleteButton);
 }
 
+// Resto das funções mantidas iguais (showDeleteButton, hideDeleteButton, etc.)
 function showDeleteButton(e) {
     const row = e.currentTarget;
     if (row.querySelector('.floating-delete')) return;
@@ -168,16 +264,8 @@ function deleteFloatingRow(btn) {
     updateRowNumbers(tableId);
 }
 
-/**************************************
- * FUNÇÕES GLOBAIS
- **************************************/
-
 window.addRow = function(tableId) {
     addRowAnyTable(tableId);
-};
-
-window.deleteRow = function() {
-    // Não usado mais - tudo é flutuante
 };
 
 function updateRowNumbers(tableId) {
@@ -188,21 +276,40 @@ function updateRowNumbers(tableId) {
     });
 }
 
+function removeBudgetColumn(category) {
+    if (!confirm(`Remover coluna "${category}"?`)) return;
+
+    budgetColumns = budgetColumns.filter(cat => cat !== category);
+
+    const table = document.getElementById('table2');
+    const theadRow = table.querySelector('thead tr');
+    const thToRemove = Array.from(theadRow.children).find(th => th.textContent.includes(category));
+    if (thToRemove) thToRemove.remove();
+
+    const tbody = table.querySelector('tbody');
+    tbody.querySelectorAll('tr').forEach(row => {
+        const tds = Array.from(row.children);
+        const tdToRemove = tds.find((td, i) => i < tds.length - 1 && td.textContent.includes(category));
+        if (tdToRemove) tdToRemove.remove();
+    });
+    
+    updateRowNumbers('table2');
+}
+
 /**************************************
  * INICIALIZAÇÃO
  **************************************/
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Limpa todas as tabelas
-    Object.keys(tableConfigs).forEach(tableId => {
-        const tbody = document.querySelector(`#${tableId} tbody`);
-        if (tbody) tbody.innerHTML = '';
-    });
+    // Carrega dados salvos
+    loadSavedData();
     
-    // Cria 8 linhas em todas
+    // Cria linhas iniciais se não houver dados salvos
     Object.keys(tableConfigs).forEach(tableId => {
-        for (let i = 0; i < 8; i++) {
-            addRow(tableId);
+        if (!savedData[tableId]) {
+            for (let i = 0; i < 8; i++) {
+                addRow(tableId);
+            }
         }
     });
 
