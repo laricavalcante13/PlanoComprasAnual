@@ -4,7 +4,7 @@ let modalInstance;
 let budgetCategoryCounter = 0;
 const budgetCategories = [];
 
-const params = new URLSearchParams(window.location.search);
+/*const params = new URLSearchParams(window.location.search);
     const setor = params.get("setor");
 
     const nomes = {
@@ -20,7 +20,7 @@ const params = new URLSearchParams(window.location.search);
 
     document.getElementById("titulo-setor").innerText =
         setor ? "Setor " + (nomes[setor] || setor) : "Setor Cadastro";
-
+*/
 // Opções de categorias
 const categoryOptions = [
     "Passagem Aérea",
