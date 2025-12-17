@@ -9,8 +9,8 @@
     <link href="css/styles.css" rel="stylesheet">
     <link href="css/styletables.css" rel="stylesheet">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-    <script src="js/scripttables.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/scripttables.js"></script>
 </head>
 
 <body class="sb-nav-fixed">
@@ -103,16 +103,15 @@
                             <div class="tab-content" id="myTabContent">
                                 <div class="tab-pane fade show active" id="tab1" role="tabpanel">
                                     <div class="mb-3">
-                                        <button class="btn btn-success btn-sm" onclick="addRow('table1')">
+                                        <button class="btn btn-success btn-sm" onclick="openAddModal()">
                                             <i class="fas fa-plus"></i> Adicionar Linha
                                         </button>
                                         <button class="btn btn-warning btn-sm ms-2" onclick="saveTableData('table1')">
                                             <i class="fas fa-save"></i> Salvar Planilha
                                         </button>
                                     </div>
-                                    </div>
                                     <div class="table-responsive">
-                                        <table class="editable-table table table-bordered" id="table1">
+                                        <table class="table table-bordered" id="table1">
                                             <thead>
                                                 <tr>
                                                     <th style="width: 2%">#</th>
@@ -125,6 +124,7 @@
                                                     <th style="width: 10%">Realizado(data / valor / %)</th>
                                                     <th style="width: 10%">Liderança</th>
                                                     <th style="width: 10%">Recursos Necessários</th>
+                                                    <th style="width: 5%">Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
@@ -264,6 +264,77 @@
             </footer>
         </div>
     </div>
+
+    <!-- Modal para adicionar/editar linha -->
+    <div class="modal fade" id="rowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Adicionar Novo Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editingRowIndex">
+                    
+                    <div class="mb-3">
+                        <label for="inputProjeto" class="form-label">Projeto</label>
+                        <input type="text" class="form-control" id="inputProjeto">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputAcao" class="form-label">Ação/Operação</label>
+                        <input type="text" class="form-control" id="inputAcao">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputProduto" class="form-label">Produto</label>
+                        <input type="text" class="form-control" id="inputProduto">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputResultados" class="form-label">Resultados Esperados</label>
+                        <textarea class="form-control" id="inputResultados" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputPrioridade" class="form-label">Prioridade</label>
+                        <select class="form-select" id="inputPrioridade">
+                            <option value="">Selecione...</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Média">Média</option>
+                            <option value="Baixa">Baixa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputCronograma" class="form-label">Cronograma de Execução</label>
+                        <input type="text" class="form-control" id="inputCronograma">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputRealizado" class="form-label">Realizado (data / valor / %)</label>
+                        <input type="text" class="form-control" id="inputRealizado">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputLideranca" class="form-label">Liderança</label>
+                        <input type="text" class="form-control" id="inputLideranca">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputRecursos" class="form-label">Recursos Necessários</label>
+                        <textarea class="form-control" id="inputRecursos" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveRowData()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
 </body>
 
 </html>
