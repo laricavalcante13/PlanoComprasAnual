@@ -22,11 +22,7 @@ let setores = [
     { id: 20, nome: 'Cadastro', descricao: '', status: 'ativo' }
 ];
 
-let usuarios = [
-    { id: 1, nome: 'Maria Silva', email: 'maria@crn8.com', cargo: 'Gerente', status: 'ativo', setores: [1, 6, 7] },
-    { id: 2, nome: 'João Santos', email: 'joao@crn8.com', cargo: 'Coordenador', status: 'ativo', setores: [2, 11] },
-    { id: 3, nome: 'Ana Costa', email: 'ana@crn8.com', cargo: 'Assistente', status: 'ativo', setores: [3, 20] }
-];
+let usuarios = [];
 
 let permissoes = {};
 usuarios.forEach(u => {
@@ -36,11 +32,7 @@ usuarios.forEach(u => {
     });
 });
 
-let logs = [
-    { data: '2025-12-18 10:30', usuario: 'Maria Silva', acao: 'Criou setor "Diretoria"' },
-    { data: '2025-12-18 11:15', usuario: 'João Santos', acao: 'Editou usuário "Ana Costa"' },
-    { data: '2025-12-18 14:20', usuario: 'Maria Silva', acao: 'Concedeu permissão de edição' }
-];
+let logs = [];
 
 // Sidebar toggle
 document.getElementById('sidebarToggle').addEventListener('click', function () {
