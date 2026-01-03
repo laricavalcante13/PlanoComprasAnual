@@ -1,0 +1,378 @@
+/* Sistema de Planejamento Orçamentário - Next.js + TypeScript
+
+## 📁 Estrutura do Projeto
+
+```
+pca-crn8/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── login/
+│   │   └── page.tsx
+│   ├── dashboard/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   └── api/
+│       └── auth/
+│           └── login/
+│               └── route.ts
+├── components/
+│   ├── LoginForm.tsx
+│   ├── Sidebar.tsx
+│   ├── TopNav.tsx
+│   ├── BudgetTable.tsx
+│   └── EditModal.tsx
+├── lib/
+│   ├── auth.ts
+│   └── types.ts
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── tsconfig.json
+└── tailwind.config.js
+```
+
+---
+
+## 🚀 Comandos para Criar o Projeto
+
+```bash
+# 1. Criar projeto Next.js com TypeScript
+npx create-next-app@latest pca-crn8 --typescript --tailwind --app --no-src-dir
+
+# 2. Entrar na pasta
+cd pca-crn8
+
+# 3. Instalar dependências
+npm install lucide-react jsonwebtoken bcryptjs
+npm install -D @types/jsonwebtoken @types/bcryptjs
+
+# 4. Rodar o projeto
+npm run dev
+```
+
+Acesse: http://localhost:3000
+
+---
+
+## 📄 Arquivos do Projeto
+
+### 1. `package.json`
+*/
+
+```json
+{
+  "name": "pca-crn8",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/bcryptjs": "^2.4.6",
+    "typescript": "^5",
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  }
+}
+```
+
+---
+
+### 2. `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+---
+
+### 3. `tailwind.config.js`
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+---
+
+### 4. `lib/types.ts`
+
+```typescript
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface BudgetItem {
+  id: string;
+  projeto: string;
+  acao: string;
+  produto: string;
+  resultados: string;
+  prioridade: 'Alta' | 'Média' | 'Baixa';
+  cronograma: string;
+  realizado: string;
+  lideranca: string;
+  recursos: string;
+  setor: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MonthlyDistribution {
+  id: string;
+  acao: string;
+  custoTotal: number;
+  jan: number;
+  fev: number;
+  mar: number;
+  abr: number;
+  mai: number;
+  jun: number;
+  jul: number;
+  ago: number;
+  set: number;
+  out: number;
+  nov: number;
+  dez: number;
+}
+```
+
+---
+
+### 5. `lib/auth.ts`
+
+```typescript
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { User } from './types';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'sua-chave-secreta-super-segura';
+
+// Mock de usuários (em produção, usar banco de dados)
+const users = [
+  {
+    id: '1',
+    email: 'admin@crn8.org.br',
+    password: '$2a$10$XqJ5X8yD7Yn2K4Qc3Lh8ZOqVvFxqhYJ6sHX5jQ7Wq8K9Rp0Lm2N3O', // admin123
+    name: 'Administrador CRN8',
+    role: 'admin'
+  }
+];
+
+export async function validateCredentials(email: string, password: string): Promise<User | null> {
+  const user = users.find(u => u.email === email);
+  
+  if (!user) return null;
+  
+  const isValid = await bcrypt.compare(password, user.password);
+  
+  if (!isValid) return null;
+  
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role
+  };
+}
+
+export function generateToken(user: User): string {
+  return jwt.sign(
+    { userId: user.id, email: user.email, role: user.role },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+}
+
+export function verifyToken(token: string): any {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch {
+    return null;
+  }
+}
+
+// Gerar hash de senha (helper para criar novos usuários)
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
+}
+```
+
+---
+
+### 6. `middleware.ts`
+
+```typescript
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { verifyToken } from './lib/auth';
+
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('auth_token')?.value;
+  const { pathname } = request.nextUrl;
+
+  // Rotas públicas
+  if (pathname === '/login' || pathname === '/api/auth/login') {
+    if (token && verifyToken(token)) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Rotas protegidas
+  if (pathname.startsWith('/dashboard')) {
+    if (!token || !verifyToken(token)) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/dashboard/:path*', '/login', '/api/auth/:path*']
+};
+```
+
+---
+
+### 7. `app/layout.tsx`
+
+```typescript
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'PCA - CRN8 | Planejamento Orçamentário',
+  description: 'Sistema de Controle e Planejamento Anual - Conselho Regional de Nutrição 8ª Região',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="pt-BR">
+      <body className={inter.className}>{children}</body>
+    </html>
+  );
+}
+```
+
+---
+
+### 8. `app/page.tsx`
+
+```typescript
+import { redirect } from 'next/navigation';
+
+export default function Home() {
+  redirect('/login');
+}
+```
+
+---
+
+### 9. `app/globals.css`
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+```
+
+---
+
+## 📝 Próximos Passos
+
+Após criar a estrutura, vou fornecer os componentes individuais:
+
+1. ✅ Página de Login
+2. ✅ API Route de Autenticação
+3. ✅ Dashboard Layout
+4. ✅ Componentes (Sidebar, TopNav, etc)
+5. ✅ Tabela de Orçamento
+6. ✅ Modal de Edição
+
+Deseja que eu continue com os componentes?
